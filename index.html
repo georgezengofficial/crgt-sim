@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>crGT-Sim: Q-Learning &amp; Impulsivity Parameter Explorer</title>
+    <!-- React + ReactDOM + Babel -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+    <style>
+        /* ----- global reset & dark theme ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0e14;
+            color: #e6edf5;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        /* scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a212b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3a4a5e;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f647c;
+        }
+
+        #root {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* ----- layout ----- */
+        .app-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* sidebar */
+        .sidebar {
+            flex: 0 0 300px;
+            background: #131b26;
+            border-radius: 16px;
+            padding: 20px 18px 24px;
+            border: 1px solid #25303e;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            height: fit-content;
+            position: sticky;
+            top: 16px;
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #b3d0f0, #7aa9e6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-sub {
+            font-size: 12px;
+            color: #8fa4bc;
+            border-bottom: 1px solid #25303e;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .param-group {
+            margin-bottom: 18px;
+        }
+
+        .param-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 500;
+            color: #c9d8ec;
+            margin-bottom: 3px;
+        }
+
+        .param-label .val {
+            color: #7aa9e6;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 5px;
+            border-radius: 4px;
+            background: #1f2b39;
+            outline: none;
+            transition: background 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4f8fd4;
+            cursor: pointer;
+            border: 2px solid #7aa9e6;
+            box-shadow: 0 0 8px rgba(79, 143, 212, 0.3);
+            transition: 0.15s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.12);
+            background: #5f9fe4;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4f8fd4;
+            cursor: pointer;
+            border: 2px solid #7aa9e6;
+        }
+
+        .preset-section {
+            margin: 22px 0 14px;
+        }
+        .preset-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8fa4bc;
+            margin-bottom: 8px;
+        }
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .preset-btn {
+            background: #1f2b39;
+            border: 1px solid #2f3f52;
+            color: #c9d8ec;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            letter-spacing: 0.2px;
+        }
+        .preset-btn:hover {
+            background: #2a3a4e;
+            border-color: #4f8fd4;
+            color: #fff;
+        }
+        .preset-btn.active {
+            background: #1a3a5a;
+            border-color: #4f8fd4;
+            color: #b3d8ff;
+            box-shadow: 0 0 12px rgba(79, 143, 212, 0.15);
+        }
+
+        .export-wrap {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #25303e;
+        }
+        .export-btn {
+            background: #1a3a5a;
+            border: none;
+            color: #e6edf5;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid #2a5a7a;
+        }
+        .export-btn:hover {
+            background: #1f4a70;
+            border-color: #4f8fd4;
+            box-shadow: 0 0 20px rgba(79, 143, 212, 0.1);
+        }
+        .export-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* ----- main content ----- */
+        .main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* metrics row */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .metric-card {
+            background: #131b26;
+            border: 1px solid #25303e;
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: border 0.2s;
+        }
+        .metric-card:hover {
+            border-color: #3a4a5e;
+        }
+        .metric-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #8fa4bc;
+            margin-bottom: 2px;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #e6edf5;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.5px;
+        }
+        .metric-value .unit {
+            font-size: 14px;
+            font-weight: 400;
+            color: #8fa4bc;
+            margin-left: 2px;
+        }
+        .metric-card .sub {
+            font-size: 12px;
+            color: #6a8aac;
+            margin-top: 2px;
+        }
+
+        /* chart cards */
+        .chart-card {
+            background: #131b26;
+            border: 1px solid #25303e;
+            border-radius: 16px;
+            padding: 16px 18px 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+        .chart-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #c9d8ec;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-title small {
+            font-weight: 400;
+            font-size: 12px;
+            color: #6a8aac;
+        }
+        .chart-wrap {
+            position: relative;
+            height: 220px;
+        }
+        .chart-wrap.tall {
+            height: 240px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 11px;
+            background: #1a2a3a;
+            color: #8fa4bc;
+            padding: 2px 12px;
+            border-radius: 20px;
+            margin-left: 6px;
+        }
+
+        /* responsive */
+        @media (max-width: 820px) {
+            .sidebar {
+                flex: 1 1 100%;
+                position: static;
+                max-height: none;
+            }
+            .app-container {
+                flex-direction: column;
+            }
+            .metrics-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+            .sidebar {
+                padding: 14px;
+            }
+            .metric-value {
+                font-size: 20px;
+            }
+            .chart-wrap {
+                height: 170px;
+            }
+            .chart-wrap.tall {
+                height: 190px;
+            }
+        }
+
+        /* loading shimmer */
+        .sim-loading {
+            opacity: 0.6;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+        // ----- constants -----
+        const N_TRIALS = 300;
+        const BLOCK_SIZE = 10;
+        const N_BLOCKS = N_TRIALS / BLOCK_SIZE;
+
+        // crGT task parameters: [winProb, winReward, lossPenalty]
+        const TASK_OPTIONS = [
+            { id: 'P1', label: 'P1', winProb: 0.90, winReward: 1, lossPenalty: -1, desc: 'Safe' },
+            { id: 'P2', label: 'P2', winProb: 0.80, winReward: 2, lossPenalty: -2, desc: 'Optimal' },
+            { id: 'P3', label: 'P3', winProb: 0.60, winReward: 3, lossPenalty: -3, desc: 'Risky' },
+            { id: 'P4', label: 'P4', winProb: 0.40, winReward: 4, lossPenalty: -4, desc: 'HighRisk' },
+        ];
+
+        // ----- Q-learning agent -----
+        class crGTAgent {
+            constructor(alphaWin, alphaLoss, beta, gammaImpulse) {
+                this.alphaWin = alphaWin;
+                this.alphaLoss = alphaLoss;
+                this.beta = beta;
+                this.gammaImpulse = gammaImpulse;
+                this.Q = [0, 0, 0, 0]; // one per option
+                this.lastChoice = -1;
+                this.lastOutcome = null; // 'win' or 'loss'
+                this.trialLog = [];
+            }
+
+            // softmax choice
+            selectAction() {
+                const q = this.Q;
+                const b = this.beta;
+                const exps = q.map(v => Math.exp(b * v));
+                const sum = exps.reduce((a, b) => a + b, 0);
+                if (sum === 0 || !isFinite(sum)) {
+                    // fallback: uniform
+                    const idx = Math.floor(Math.random() * 4);
+                    return idx;
+                }
+                const probs = exps.map(e => e / sum);
+                let r = Math.random();
+                for (let i = 0; i < probs.length; i++) {
+                    r -= probs[i];
+                    if (r <= 0) return i;
+                }
+                return 3;
+            }
+
+            // update Q with outcome
+            updateQ(action, reward, outcome) {
+                const alpha = outcome === 'win' ? this.alphaWin : this.alphaLoss;
+                const delta = reward - this.Q[action];
+                this.Q[action] += alpha * delta;
+                // clamp to prevent runaway
+                if (this.Q[action] > 50) this.Q[action] = 50;
+                if (this.Q[action] < -50) this.Q[action] = -50;
+            }
+
+            // check premature response during ITI
+            checkPremature() {
+                return Math.random() < this.gammaImpulse;
+            }
+
+            // run full simulation
+            run() {
+                this.Q = [0, 0, 0, 0];
+                this.lastChoice = -1;
+                this.lastOutcome = null;
+                this.trialLog = [];
+
+                for (let t = 0; t < N_TRIALS; t++) {
+                    // 1. choose action
+                    const action = this.selectAction();
+                    const opt = TASK_OPTIONS[action];
+
+                    // 2. determine outcome
+                    const isWin = Math.random() < opt.winProb;
+                    const outcome = isWin ? 'win' : 'loss';
+                    const reward = isWin ? opt.winReward : opt.lossPenalty;
+
+                    // 3. update Q
+                    this.updateQ(action, reward, outcome);
+
+                    // 4. premature response during ITI
+                    const premature = this.checkPremature() ? 1 : 0;
+
+                    // 5. win-stay / lose-shift (relative to previous trial)
+                    let winStay = 0;
+                    let loseShift = 0;
+                    if (this.lastChoice !== -1 && this.lastOutcome !== null) {
+                        if (this.lastOutcome === 'win' && action === this.lastChoice) winStay = 1;
+                        if (this.lastOutcome === 'loss' && action !== this.lastChoice) loseShift = 1;
+                    }
+
+                    // 6. log
+                    this.trialLog.push({
+                        trial: t + 1,
+                        choice: action,
+                        choiceLabel: TASK_OPTIONS[action].id,
+                        outcome: outcome,
+                        reward: reward,
+                        premature: premature,
+                        winStay: winStay,
+                        loseShift: loseShift,
+                        Q: [...this.Q],
+                    });
+
+                    this.lastChoice = action;
+                    this.lastOutcome = outcome;
+                }
+
+                return this.trialLog;
+            }
+        }
+
+        // ----- data processors -----
+        function computeBlockData(log) {
+            const blocks = [];
+            for (let b = 0; b < N_BLOCKS; b++) {
+                const start = b * BLOCK_SIZE;
+                const end = start + BLOCK_SIZE;
+                const slice = log.slice(start, end);
+                const counts = [0, 0, 0, 0];
+                let prem = 0;
+                let wins = 0;
+                let losses = 0;
+                let winStay = 0;
+                let loseShift = 0;
+                let totalWinStay = 0;
+                let totalLoseShift = 0;
+
+                for (const rec of slice) {
+                    counts[rec.choice] += 1;
+                    if (rec.premature) prem += 1;
+                    if (rec.outcome === 'win') {
+                        wins += 1;
+                        if (rec.winStay) { winStay += 1; }
+                        totalWinStay += 1;
+                    } else {
+                        losses += 1;
+                        if (rec.loseShift) { loseShift += 1; }
+                        totalLoseShift += 1;
+                    }
+                }
+                const total = slice.length;
+                blocks.push({
+                    block: b + 1,
+                    p1: (counts[0] / total) * 100,
+                    p2: (counts[1] / total) * 100,
+                    p3: (counts[2] / total) * 100,
+                    p4: (counts[3] / total) * 100,
+                    premRate: (prem / total) * 100,
+                    winStayProb: totalWinStay > 0 ? winStay / totalWinStay : 0,
+                    loseShiftProb: totalLoseShift > 0 ? loseShift / totalLoseShift : 0,
+                    totalPrem: prem,
+                });
+            }
+            return blocks;
+        }
+
+        function computeMetrics(log) {
+            const total = log.length;
+            let p2Count = 0;
+            let premTotal = 0;
+            let winStayTotal = 0;
+            let winTotal = 0;
+            let loseShiftTotal = 0;
+            let loseTotal = 0;
+
+            for (const rec of log) {
+                if (rec.choice === 1) p2Count += 1;
+                if (rec.premature) premTotal += 1;
+                if (rec.outcome === 'win') {
+                    winTotal += 1;
+                    if (rec.winStay) winStayTotal += 1;
+                } else {
+                    loseTotal += 1;
+                    if (rec.loseShift) loseShiftTotal += 1;
+                }
+            }
+
+            return {
+                optimalPct: (p2Count / total) * 100,
+                premTotal: premTotal,
+                winStayProb: winTotal > 0 ? winStayTotal / winTotal : 0,
+                loseShiftProb: loseTotal > 0 ? loseShiftTotal / loseTotal : 0,
+                winRate: winTotal / total,
+            };
+        }
+
+        // ----- CSV export -----
+        function generateCSV(log) {
+            const header = 'trial,choice,outcome,premature_response,win_stay,lose_shift\n';
+            const rows = log.map(r =>
+                `${r.trial},${r.choiceLabel},${r.outcome},${r.premature},${r.winStay},${r.loseShift}`
+            );
+            return header + rows.join('\n');
+        }
+
+        function downloadCSV(csv, filename = 'crGT_simulation_data.csv') {
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+
+        // ----- color palette -----
+        const COLORS = {
+            P1: '#4f8fd4',
+            P2: '#4cd9a0',
+            P3: '#f5b84a',
+            P4: '#e8686a',
+            prem: '#c084d6',
+            bg: '#0b0e14',
+            card: '#131b26',
+            border: '#25303e',
+            text: '#e6edf5',
+            textMuted: '#8fa4bc',
+        };
+
+        // ----- React Components -----
+
+        // Slider with label
+        const ParamSlider = ({ label, id, min, max, step, value, onChange, format }) => {
+            const fmt = format || ((v) => v.toFixed(2));
+            return (
+                <div className="param-group">
+                    <div className="param-label">
+                        <span>{label}</span>
+                        <span className="val">{fmt(value)}</span>
+                    </div>
+                    <input
+                        type="range"
+                        id={id}
+                        min={min}
+                        max={max}
+                        step={step}
+                        value={value}
+                        onChange={e => onChange(parseFloat(e.target.value))}
+                    />
+                </div>
+            );
+        };
+
+        // Preset buttons
+        const PresetSelector = ({ presets, current, onSelect }) => {
+            return (
+                <div className="preset-section">
+                    <div className="preset-label">Experiment Presets</div>
+                    <div className="preset-buttons">
+                        {Object.entries(presets).map(([key, label]) => (
+                            <button
+                                key={key}
+                                className={`preset-btn ${current === key ? 'active' : ''}`}
+                                onClick={() => onSelect(key)}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // Metrics cards
+        const MetricsRow = ({ metrics }) => {
+            const { optimalPct, premTotal, winStayProb, loseShiftProb, winRate } = metrics;
+            return (
+                <div className="metrics-row">
+                    <div className="metric-card">
+                        <div className="metric-label">Optimal Choice (P2)</div>
+                        <div className="metric-value">
+                            {optimalPct.toFixed(1)}<span className="unit">%</span>
+                        </div>
+                        <div className="sub">of 300 trials</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Premature Responses</div>
+                        <div className="metric-value">
+                            {premTotal}<span className="unit">/ 300</span>
+                        </div>
+                        <div className="sub">motor impulsivity</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Win - Stay</div>
+                        <div className="metric-value">
+                            {(winStayProb * 100).toFixed(1)}<span className="unit">%</span>
+                        </div>
+                        <div className="sub">P(stay | win)</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Lose - Shift</div>
+                        <div className="metric-value">
+                            {(loseShiftProb * 100).toFixed(1)}<span className="unit">%</span>
+                        </div>
+                        <div className="sub">P(shift | loss)</div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ----- main App -----
+        const App = () => {
+            // parameters
+            const [alphaWin, setAlphaWin] = useState(0.5);
+            const [alphaLoss, setAlphaLoss] = useState(0.5);
+            const [beta, setBeta] = useState(1.0);
+            const [gammaImpulse, setGammaImpulse] = useState(0.10);
+            const [presetKey, setPresetKey] = useState('control');
+
+            // simulation state
+            const [log, setLog] = useState(null);
+            const [blocks, setBlocks] = useState(null);
+            const [metrics, setMetrics] = useState(null);
+            const [isRunning, setIsRunning] = useState(false);
+
+            // chart refs
+            const chart1Ref = useRef(null);
+            const chart2Ref = useRef(null);
+            const chart1Instance = useRef(null);
+            const chart2Instance = useRef(null);
+
+            // preset definitions
+            const presets = {
+                control: 'Control / Baseline',
+                female_lc: 'Female + LC Inhibition',
+                acin_acq: 'aCIN Inhibition (Acquisition)',
+                custom: 'Custom Parameter Set',
+            };
+
+            const presetValues = {
+                control: { alphaWin: 0.5, alphaLoss: 0.5, beta: 1.0, gammaImpulse: 0.10 },
+                female_lc: { alphaWin: 0.5, alphaLoss: 0.20, beta: 1.0, gammaImpulse: 0.40 },
+                acin_acq: { alphaWin: 0.3, alphaLoss: 0.3, beta: 3.0, gammaImpulse: 0.15 },
+                custom: { alphaWin: 0.5, alphaLoss: 0.5, beta: 1.0, gammaImpulse: 0.10 },
+            };
+
+            // apply preset
+            const applyPreset = useCallback((key) => {
+                setPresetKey(key);
+                if (key === 'custom') return;
+                const vals = presetValues[key];
+                if (vals) {
+                    setAlphaWin(vals.alphaWin);
+                    setAlphaLoss(vals.alphaLoss);
+                    setBeta(vals.beta);
+                    setGammaImpulse(vals.gammaImpulse);
+                }
+            }, []);
+
+            // run simulation
+            const runSimulation = useCallback(() => {
+                setIsRunning(true);
+                // Use requestAnimationFrame to let UI breathe
+                requestAnimationFrame(() => {
+                    const agent = new crGTAgent(alphaWin, alphaLoss, beta, gammaImpulse);
+                    const data = agent.run();
+                    const blk = computeBlockData(data);
+                    const met = computeMetrics(data);
+                    setLog(data);
+                    setBlocks(blk);
+                    setMetrics(met);
+                    setIsRunning(false);
+                });
+            }, [alphaWin, alphaLoss, beta, gammaImpulse]);
+
+            // auto-run on param change
+            useEffect(() => {
+                runSimulation();
+            }, [alphaWin, alphaLoss, beta, gammaImpulse, runSimulation]);
+
+            // chart rendering
+            useEffect(() => {
+                if (!blocks || blocks.length === 0) return;
+
+                const labels = blocks.map(b => `B${b.block}`);
+
+                // ---- Chart 1: Choice Strategy ----
+                if (chart1Ref.current) {
+                    if (chart1Instance.current) {
+                        chart1Instance.current.destroy();
+                        chart1Instance.current = null;
+                    }
+                    const ctx = chart1Ref.current.getContext('2d');
+                    chart1Instance.current = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'P1 (Safe)',
+                                    data: blocks.map(b => b.p1),
+                                    borderColor: COLORS.P1,
+                                    backgroundColor: COLORS.P1 + '30',
+                                    borderWidth: 2.5,
+                                    pointRadius: 1.5,
+                                    tension: 0.3,
+                                    fill: false,
+                                },
+                                {
+                                    label: 'P2 (Optimal)',
+                                    data: blocks.map(b => b.p2),
+                                    borderColor: COLORS.P2,
+                                    backgroundColor: COLORS.P2 + '30',
+                                    borderWidth: 2.5,
+                                    pointRadius: 1.5,
+                                    tension: 0.3,
+                                    fill: false,
+                                },
+                                {
+                                    label: 'P3 (Risky)',
+                                    data: blocks.map(b => b.p3),
+                                    borderColor: COLORS.P3,
+                                    backgroundColor: COLORS.P3 + '30',
+                                    borderWidth: 2.5,
+                                    pointRadius: 1.5,
+                                    tension: 0.3,
+                                    fill: false,
+                                },
+                                {
+                                    label: 'P4 (HighRisk)',
+                                    data: blocks.map(b => b.p4),
+                                    borderColor: COLORS.P4,
+                                    backgroundColor: COLORS.P4 + '30',
+                                    borderWidth: 2.5,
+                                    pointRadius: 1.5,
+                                    tension: 0.3,
+                                    fill: false,
+                                },
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#c9d8ec',
+                                        font: { size: 11, weight: '500' },
+                                        boxWidth: 14,
+                                        padding: 12
+                                    }
+                                },
+                                tooltip: {
+                                    mode: 'index',
+                                    intersect: false,
+                                    backgroundColor: '#1a212b',
+                                    titleColor: '#e6edf5',
+                                    bodyColor: '#c9d8ec',
+                                    borderColor: '#25303e',
+                                    borderWidth: 1,
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: { color: '#8fa4bc', font: { size: 10 }, maxTicksLimit: 30 },
+                                    grid: { color: '#1a212b', drawBorder: false },
+                                },
+                                y: {
+                                    min: 0,
+                                    max: 100,
+                                    ticks: { color: '#8fa4bc', font: { size: 10 }, callback: v => v + '%' },
+                                    grid: { color: '#1a212b', drawBorder: false },
+                                }
+                            },
+                            interaction: {
+                                intersect: false,
+                                mode: 'index',
+                            },
+                        }
+                    });
+                }
+
+                // ---- Chart 2: Impulsivity ----
+                if (chart2Ref.current) {
+                    if (chart2Instance.current) {
+                        chart2Instance.current.destroy();
+                        chart2Instance.current = null;
+                    }
+                    const ctx2 = chart2Ref.current.getContext('2d');
+                    chart2Instance.current = new Chart(ctx2, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Premature Response Rate',
+                                    data: blocks.map(b => b.premRate),
+                                    backgroundColor: COLORS.prem + '80',
+                                    borderColor: COLORS.prem,
+                                    borderWidth: 1.5,
+                                    borderRadius: 3,
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#c9d8ec',
+                                        font: { size: 11, weight: '500' },
+                                        boxWidth: 14,
+                                        padding: 12
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: '#1a212b',
+                                    titleColor: '#e6edf5',
+                                    bodyColor: '#c9d8ec',
+                                    borderColor: '#25303e',
+                                    borderWidth: 1,
+                                    callbacks: {
+                                        label: ctx => ctx.parsed.y.toFixed(1) + '%'
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: { color: '#8fa4bc', font: { size: 10 }, maxTicksLimit: 30 },
+                                    grid: { color: '#1a212b', drawBorder: false },
+                                },
+                                y: {
+                                    min: 0,
+                                    max: 100,
+                                    ticks: { color: '#8fa4bc', font: { size: 10 }, callback: v => v + '%' },
+                                    grid: { color: '#1a212b', drawBorder: false },
+                                }
+                            }
+                        }
+                    });
+                }
+
+                return () => {
+                    if (chart1Instance.current) {
+                        chart1Instance.current.destroy();
+                        chart1Instance.current = null;
+                    }
+                    if (chart2Instance.current) {
+                        chart2Instance.current.destroy();
+                        chart2Instance.current = null;
+                    }
+                };
+            }, [blocks]);
+
+            // export handler
+            const handleExport = useCallback(() => {
+                if (!log || log.length === 0) return;
+                const csv = generateCSV(log);
+                downloadCSV(csv);
+            }, [log]);
+
+            // compute if running
+            const isLoading = isRunning || !log || !blocks || !metrics;
+
+            return (
+                <div className="app-container">
+                    {/* ---- Sidebar ---- */}
+                    <div className="sidebar">
+                        <div className="sidebar-title">crGT-Sim</div>
+                        <div className="sidebar-sub">
+                            Q-Learning & Impulsivity Parameter Explorer
+                        </div>
+
+                        <ParamSlider
+                            label="α (Learning Rate Wins)"
+                            id="alphaWin"
+                            min={0.01}
+                            max={1.0}
+                            step={0.01}
+                            value={alphaWin}
+                            onChange={v => { setAlphaWin(v); setPresetKey('custom'); }}
+                            format={v => v.toFixed(2)}
+                        />
+
+                        <ParamSlider
+                            label="α (Learning Rate Losses)"
+                            id="alphaLoss"
+                            min={0.01}
+                            max={1.0}
+                            step={0.01}
+                            value={alphaLoss}
+                            onChange={v => { setAlphaLoss(v); setPresetKey('custom'); }}
+                            format={v => v.toFixed(2)}
+                        />
+
+                        <ParamSlider
+                            label="β (Exploration / Inverse Temp)"
+                            id="beta"
+                            min={0.1}
+                            max={5.0}
+                            step={0.05}
+                            value={beta}
+                            onChange={v => { setBeta(v); setPresetKey('custom'); }}
+                            format={v => v.toFixed(2)}
+                        />
+
+                        <ParamSlider
+                            label="γ (Motor Impulsivity Threshold)"
+                            id="gammaImpulse"
+                            min={0.0}
+                            max={1.0}
+                            step={0.01}
+                            value={gammaImpulse}
+                            onChange={v => { setGammaImpulse(v); setPresetKey('custom'); }}
+                            format={v => v.toFixed(2)}
+                        />
+
+                        <PresetSelector
+                            presets={presets}
+                            current={presetKey}
+                            onSelect={applyPreset}
+                        />
+
+                        <div className="export-wrap">
+                            <button
+                                className="export-btn"
+                                onClick={handleExport}
+                                disabled={isLoading || !log}
+                            >
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
+                                    <path d="M12 15l-4-4h2.5V8h3v3H16l-4 4z" />
+                                    <path d="M8 17h8v1.5H8V17z" />
+                                </svg>
+                                Download Synthetic Dataset (.csv)
+                            </button>
+                            <div style={{ fontSize: '11px', color: '#6a8aac', marginTop: '8px', textAlign: 'center' }}>
+                                300 trials · crGT P1-P4 · R / Python ready
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ---- Main Content ---- */}
+                    <div className="main">
+                        {/* Metrics */}
+                        {metrics && !isLoading ? (
+                            <MetricsRow metrics={metrics} />
+                        ) : (
+                            <div className="metrics-row">
+                                {[1, 2, 3, 4].map(i => (
+                                    <div key={i} className="metric-card">
+                                        <div className="metric-label">—</div>
+                                        <div className="metric-value">—</div>
+                                        <div className="sub">loading…</div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Chart 1 */}
+                        <div className="chart-card">
+                            <div className="chart-title">
+                                Choice Strategy Trajectory
+                                <small>10-trial rolling blocks</small>
+                                <span className="status-badge">
+                                    {isLoading ? 'running…' : `${N_BLOCKS} blocks`}
+                                </span>
+                            </div>
+                            <div className="chart-wrap tall">
+                                <canvas ref={chart1Ref}></canvas>
+                            </div>
+                        </div>
+
+                        {/* Chart 2 */}
+                        <div className="chart-card">
+                            <div className="chart-title">
+                                Motor Impulsivity Index
+                                <small>premature response rate</small>
+                                <span className="status-badge">
+                                    {isLoading ? '…' : `γ = ${gammaImpulse.toFixed(2)}`}
+                                </span>
+                            </div>
+                            <div className="chart-wrap">
+                                <canvas ref={chart2Ref}></canvas>
+                            </div>
+                        </div>
+
+                        {/* footer note */}
+                        <div style={{ fontSize: '11px', color: '#4f647c', textAlign: 'center', padding: '6px 0 2px' }}>
+                            Based on Hynes et al. · LC / aCIN modulation · crGT paradigm
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ----- mount -----
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
