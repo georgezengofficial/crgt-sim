@@ -10,6 +10,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <!-- SheetJS for xlsx/xls parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         /* ----- global reset & dark theme ----- */
@@ -48,6 +50,36 @@
         #root {
             max-width: 1600px;
             margin: 0 auto;
+        }
+
+        /* ----- top-level tabs ----- */
+        .top-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #25303e;
+            padding-bottom: 12px;
+        }
+        .top-tab-btn {
+            background: #131b26;
+            border: 1px solid #25303e;
+            color: #8fa4bc;
+            padding: 9px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .top-tab-btn:hover {
+            border-color: #3a4a5e;
+            color: #c9d8ec;
+        }
+        .top-tab-btn.active {
+            background: #1a3a5a;
+            border-color: #4f8fd4;
+            color: #b3d8ff;
+            box-shadow: 0 0 12px rgba(79, 143, 212, 0.15);
         }
 
         /* ----- layout ----- */
@@ -211,6 +243,10 @@
             border-color: #4f8fd4;
             box-shadow: 0 0 20px rgba(79, 143, 212, 0.1);
         }
+        .export-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
         .export-btn svg {
             width: 16px;
             height: 16px;
@@ -286,6 +322,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
         .chart-title small {
             font-weight: 400;
@@ -309,6 +346,144 @@
             border-radius: 20px;
             margin-left: 6px;
         }
+
+        /* ----- data panel ----- */
+        .data-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .card {
+            background: #131b26;
+            border: 1px solid #25303e;
+            border-radius: 16px;
+            padding: 18px 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #c9d8ec;
+            margin-bottom: 4px;
+        }
+
+        .card-sub {
+            font-size: 12px;
+            color: #8fa4bc;
+            margin-bottom: 14px;
+        }
+
+        .dropzone {
+            border: 2px dashed #2f3f52;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #0f151d;
+        }
+        .dropzone:hover, .dropzone.dragover {
+            border-color: #4f8fd4;
+            background: #131e2b;
+        }
+        .dropzone-label {
+            font-size: 13px;
+            color: #8fa4bc;
+        }
+        .dropzone-label b {
+            color: #c9d8ec;
+        }
+
+        .privacy-note {
+            font-size: 11px;
+            color: #6a8aac;
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: #0f1a14;
+            border: 1px solid #234a35;
+            border-radius: 8px;
+            line-height: 1.5;
+        }
+
+        table.map-table, table.fit-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+        table.map-table th, table.fit-table th {
+            text-align: left;
+            color: #8fa4bc;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 6px 10px;
+            border-bottom: 1px solid #25303e;
+        }
+        table.map-table td, table.fit-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #1a212b;
+            color: #c9d8ec;
+        }
+        table.map-table select {
+            background: #0f151d;
+            color: #e6edf5;
+            border: 1px solid #2f3f52;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 12px;
+            width: 100%;
+        }
+
+        .btn {
+            background: #1a3a5a;
+            border: 1px solid #2a5a7a;
+            color: #e6edf5;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn:hover { background: #1f4a70; border-color: #4f8fd4; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn.secondary {
+            background: #1f2b39;
+            border-color: #2f3f52;
+        }
+        .btn.secondary:hover { border-color: #4f8fd4; }
+
+        .row-flex {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .pill {
+            display: inline-block;
+            background: #1a2a3a;
+            color: #8fa4bc;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-right: 6px;
+        }
+
+        .warn-box {
+            font-size: 12px;
+            color: #e8c86a;
+            background: #2a2412;
+            border: 1px solid #4a3f1a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 10px;
+        }
+
+        .scroll-x { overflow-x: auto; }
 
         /* responsive */
         @media (max-width: 820px) {
@@ -419,13 +594,14 @@
             }
 
             // run full simulation
-            run() {
+            run(nTrials) {
+                const T = nTrials || N_TRIALS;
                 this.Q = [0, 0, 0, 0];
                 this.lastChoice = -1;
                 this.lastOutcome = null;
                 this.trialLog = [];
 
-                for (let t = 0; t < N_TRIALS; t++) {
+                for (let t = 0; t < T; t++) {
                     // 1. choose action
                     const action = this.selectAction();
                     const opt = TASK_OPTIONS[action];
@@ -470,7 +646,7 @@
             }
         }
 
-        // ----- data processors -----
+        // ----- data processors (synthetic simulator) -----
         function computeBlockData(log) {
             const blocks = [];
             for (let b = 0; b < N_BLOCKS; b++) {
@@ -545,7 +721,7 @@
             };
         }
 
-        // ----- CSV export -----
+        // ----- CSV export (synthetic) -----
         function generateCSV(log) {
             const header = 'trial,choice,outcome,premature_response,win_stay,lose_shift\n';
             const rows = log.map(r =>
@@ -565,6 +741,373 @@
             URL.revokeObjectURL(link.href);
         }
 
+        // ================================================================
+        // ---------------------  REAL DATA PIPELINE  --------------------
+        // ================================================================
+
+        // Canonical fields we try to detect in uploaded data
+        const CANONICAL_FIELDS = [
+            { key: 'ratId', label: 'Rat / Subject ID', required: true,
+              keywords: ['ratid', 'rat', 'subjectid', 'subject', 'animalid', 'animal', 'id'] },
+            { key: 'cohort', label: 'Cohort / Group', required: false,
+              keywords: ['cohort', 'group', 'condition', 'treatment'] },
+            { key: 'sex', label: 'Sex', required: false,
+              keywords: ['sex', 'gender'] },
+            { key: 'session', label: 'Session #', required: false,
+              keywords: ['session', 'day', 'sessionnum', 'sessionnumber'] },
+            { key: 'trial', label: 'Trial #', required: true,
+              keywords: ['trial', 'trialnum', 'trialnumber', 'trialindex'] },
+            { key: 'choice', label: 'Choice / Option', required: true,
+              keywords: ['choice', 'option', 'hole', 'response', 'selection', 'lever', 'choiceoption'] },
+            { key: 'outcome', label: 'Outcome (win/loss)', required: true,
+              keywords: ['outcome', 'result', 'winloss', 'win', 'reward', 'rewarded'] },
+            { key: 'premature', label: 'Premature Response', required: false,
+              keywords: ['premature', 'impulsive', 'prematureresponse', 'earlyresponse'] },
+        ];
+
+        function normalizeHeader(h) {
+            return String(h).toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        // guess a mapping from raw headers -> canonical field key
+        function guessColumnMapping(headers) {
+            const mapping = {}; // canonicalKey -> header (raw)
+            const usedHeaders = new Set();
+
+            for (const field of CANONICAL_FIELDS) {
+                let bestHeader = null;
+                let bestScore = 0;
+                for (const h of headers) {
+                    if (usedHeaders.has(h)) continue;
+                    const norm = normalizeHeader(h);
+                    for (const kw of field.keywords) {
+                        let score = 0;
+                        if (norm === kw) score = 100;
+                        else if (norm.includes(kw)) score = 60 + kw.length; // longer keyword match = more specific
+                        else if (kw.includes(norm) && norm.length >= 2) score = 40;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestHeader = h;
+                        }
+                    }
+                }
+                if (bestHeader && bestScore >= 40) {
+                    mapping[field.key] = bestHeader;
+                    usedHeaders.add(bestHeader);
+                }
+            }
+            return mapping;
+        }
+
+        // choice value -> integer 0-3, or null if unrecognized
+        function normalizeChoice(raw) {
+            if (raw === null || raw === undefined) return null;
+            const s = String(raw).trim().toLowerCase();
+            let m = s.match(/^p?\s*([1-4])$/); // P1..P4 or 1..4
+            if (m) return parseInt(m[1], 10) - 1;
+            m = s.match(/^([a-d])$/); // A..D
+            if (m) return m[1].charCodeAt(0) - 'a'.charCodeAt(0);
+            m = s.match(/^([0-3])$/); // already 0-indexed
+            if (m) return parseInt(m[1], 10);
+            return null;
+        }
+
+        // outcome value -> 'win' | 'loss' | null
+        function normalizeOutcome(raw) {
+            if (raw === null || raw === undefined) return null;
+            const s = String(raw).trim().toLowerCase();
+            if (['win', 'won', 'reward', 'rewarded', '1', 'true', 'yes'].includes(s)) return 'win';
+            if (['loss', 'lose', 'lost', 'timeout', 'punish', 'punished', '0', 'false', 'no'].includes(s)) return 'loss';
+            const num = parseFloat(s);
+            if (!isNaN(num)) return num > 0 ? 'win' : 'loss';
+            return null;
+        }
+
+        function normalizePremature(raw) {
+            if (raw === null || raw === undefined || raw === '') return 0;
+            const s = String(raw).trim().toLowerCase();
+            if (['1', 'true', 'yes', 'y'].includes(s)) return 1;
+            return 0;
+        }
+
+        // basic CSV parser (handles quoted fields with commas)
+        function parseCSVText(text) {
+            const rows = [];
+            let row = [];
+            let field = '';
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                if (inQuotes) {
+                    if (c === '"') {
+                        if (text[i + 1] === '"') { field += '"'; i++; }
+                        else inQuotes = false;
+                    } else field += c;
+                } else {
+                    if (c === '"') inQuotes = true;
+                    else if (c === ',') { row.push(field); field = ''; }
+                    else if (c === '\n' || c === '\r') {
+                        if (c === '\r' && text[i + 1] === '\n') i++;
+                        row.push(field); field = '';
+                        if (row.length > 1 || row[0] !== '') rows.push(row);
+                        row = [];
+                    } else field += c;
+                }
+            }
+            if (field !== '' || row.length > 0) { row.push(field); rows.push(row); }
+            if (rows.length === 0) return { headers: [], data: [] };
+            const headers = rows[0].map(h => h.trim());
+            const data = rows.slice(1).filter(r => r.some(v => v !== '')).map(r => {
+                const obj = {};
+                headers.forEach((h, i) => obj[h] = r[i] !== undefined ? r[i].trim() : '');
+                return obj;
+            });
+            return { headers, data };
+        }
+
+        // parse an uploaded file (csv/xlsx/xls) -> { headers, data }
+        function parseUploadedFile(file) {
+            return new Promise((resolve, reject) => {
+                const name = file.name.toLowerCase();
+                const reader = new FileReader();
+                if (name.endsWith('.csv') || name.endsWith('.txt')) {
+                    reader.onload = e => {
+                        try { resolve(parseCSVText(e.target.result)); }
+                        catch (err) { reject(err); }
+                    };
+                    reader.onerror = reject;
+                    reader.readAsText(file);
+                } else {
+                    reader.onload = e => {
+                        try {
+                            const wb = XLSX.read(e.target.result, { type: 'array' });
+                            const sheet = wb.Sheets[wb.SheetNames[0]];
+                            const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                            const headers = json.length > 0 ? Object.keys(json[0]) : [];
+                            const data = json.map(row => {
+                                const obj = {};
+                                headers.forEach(h => obj[h] = String(row[h]).trim());
+                                return obj;
+                            });
+                            resolve({ headers, data });
+                        } catch (err) { reject(err); }
+                    };
+                    reader.onerror = reject;
+                    reader.readAsArrayBuffer(file);
+                }
+            });
+        }
+
+        // apply a confirmed mapping to raw rows -> canonical trial records, grouped by rat
+        function applyMapping(rawHeaders, rawData, mapping) {
+            const dropped = { noRatId: 0, noTrial: 0, badChoice: 0, badOutcome: 0 };
+            const records = [];
+            for (const row of rawData) {
+                const ratId = mapping.ratId ? row[mapping.ratId] : null;
+                const trialRaw = mapping.trial ? row[mapping.trial] : null;
+                const choiceRaw = mapping.choice ? row[mapping.choice] : null;
+                const outcomeRaw = mapping.outcome ? row[mapping.outcome] : null;
+
+                if (!ratId) { dropped.noRatId++; continue; }
+                if (trialRaw === null || trialRaw === '') { dropped.noTrial++; continue; }
+                const choice = normalizeChoice(choiceRaw);
+                if (choice === null) { dropped.badChoice++; continue; }
+                const outcome = normalizeOutcome(outcomeRaw);
+                if (outcome === null) { dropped.badOutcome++; continue; }
+
+                records.push({
+                    ratId: String(ratId),
+                    cohort: mapping.cohort ? row[mapping.cohort] : 'unspecified',
+                    sex: mapping.sex ? row[mapping.sex] : 'unspecified',
+                    session: mapping.session ? parseFloat(row[mapping.session]) || 0 : 0,
+                    trial: parseFloat(trialRaw) || 0,
+                    choice: choice,
+                    outcome: outcome,
+                    premature: mapping.premature ? normalizePremature(row[mapping.premature]) : null,
+                });
+            }
+            // sort within each rat by session then trial
+            records.sort((a, b) => a.ratId.localeCompare(b.ratId) || a.session - b.session || a.trial - b.trial);
+
+            // group by rat
+            const byRat = {};
+            for (const r of records) {
+                if (!byRat[r.ratId]) byRat[r.ratId] = [];
+                byRat[r.ratId].push(r);
+            }
+            return { byRat, dropped, totalParsed: records.length, totalRaw: rawData.length };
+        }
+
+        // ---- model fitting to real trial sequences ----
+
+        // log-likelihood of a trial sequence under fixed params (replay actual outcomes)
+        function evalLogLik(trials, alphaWin, alphaLoss, beta) {
+            let Q = [0, 0, 0, 0];
+            let logLik = 0;
+            for (const rec of trials) {
+                const exps = Q.map(v => Math.exp(beta * v));
+                const sum = exps.reduce((a, b) => a + b, 0);
+                const probs = (sum === 0 || !isFinite(sum)) ? [0.25, 0.25, 0.25, 0.25] : exps.map(e => e / sum);
+                const p = Math.max(probs[rec.choice], 1e-9);
+                logLik += Math.log(p);
+
+                const opt = TASK_OPTIONS[rec.choice];
+                const reward = rec.outcome === 'win' ? opt.winReward : opt.lossPenalty;
+                const alpha = rec.outcome === 'win' ? alphaWin : alphaLoss;
+                const delta = reward - Q[rec.choice];
+                Q[rec.choice] += alpha * delta;
+                if (Q[rec.choice] > 50) Q[rec.choice] = 50;
+                if (Q[rec.choice] < -50) Q[rec.choice] = -50;
+            }
+            return logLik;
+        }
+
+        // coarse grid search fit for one rat's trial sequence
+        function fitTrials(trials) {
+            const alphaGrid = [0.1, 0.3, 0.5, 0.7, 0.9];
+            const betaGrid = [0.25, 0.5, 1, 1.5, 2, 3, 5];
+            let best = { alphaWin: 0.5, alphaLoss: 0.5, beta: 1, logLik: -Infinity };
+            for (const aw of alphaGrid) {
+                for (const al of alphaGrid) {
+                    for (const b of betaGrid) {
+                        const ll = evalLogLik(trials, aw, al, b);
+                        if (ll > best.logLik) best = { alphaWin: aw, alphaLoss: al, beta: b, logLik: ll };
+                    }
+                }
+            }
+            const premTrials = trials.filter(t => t.premature !== null);
+            const gammaImpulse = premTrials.length > 0
+                ? premTrials.reduce((s, t) => s + t.premature, 0) / premTrials.length
+                : null;
+            return { ...best, gammaImpulse, nTrials: trials.length };
+        }
+
+        // block-level choice % from a real trial sequence (like computeBlockData, but for real data)
+        function computeBlockDataFromTrials(trials, blockSize) {
+            const bs = blockSize || 10;
+            const nBlocks = Math.floor(trials.length / bs);
+            const blocks = [];
+            for (let b = 0; b < nBlocks; b++) {
+                const slice = trials.slice(b * bs, b * bs + bs);
+                const counts = [0, 0, 0, 0];
+                slice.forEach(t => counts[t.choice]++);
+                const total = slice.length;
+                blocks.push({
+                    block: b + 1,
+                    p1: (counts[0] / total) * 100,
+                    p2: (counts[1] / total) * 100,
+                    p3: (counts[2] / total) * 100,
+                    p4: (counts[3] / total) * 100,
+                });
+            }
+            return blocks;
+        }
+
+        function pearsonCorr(a, b) {
+            const n = Math.min(a.length, b.length);
+            if (n === 0) return null;
+            const meanA = a.slice(0, n).reduce((s, v) => s + v, 0) / n;
+            const meanB = b.slice(0, n).reduce((s, v) => s + v, 0) / n;
+            let num = 0, denA = 0, denB = 0;
+            for (let i = 0; i < n; i++) {
+                const da = a[i] - meanA, db = b[i] - meanB;
+                num += da * db; denA += da * da; denB += db * db;
+            }
+            if (denA === 0 || denB === 0) return null;
+            return num / Math.sqrt(denA * denB);
+        }
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // run the 75/25 train/test validation across rats
+        function runValidation(byRat) {
+            const ratIds = Object.keys(byRat);
+            if (ratIds.length < 4) {
+                return { error: `Need at least 4 rats with usable data for a train/test split (found ${ratIds.length}).` };
+            }
+            const shuffled = shuffle(ratIds);
+            const splitIdx = Math.max(1, Math.round(shuffled.length * 0.75));
+            const trainIds = shuffled.slice(0, splitIdx);
+            const testIds = shuffled.slice(splitIdx);
+
+            // fit each training rat individually, then average params (naive population estimate)
+            const trainFits = trainIds.map(id => fitTrials(byRat[id]));
+            const popParams = {
+                alphaWin: trainFits.reduce((s, f) => s + f.alphaWin, 0) / trainFits.length,
+                alphaLoss: trainFits.reduce((s, f) => s + f.alphaLoss, 0) / trainFits.length,
+                beta: trainFits.reduce((s, f) => s + f.beta, 0) / trainFits.length,
+            };
+
+            // evaluate predictive log-lik per trial on held-out rats using population params
+            let totalLL = 0, totalTrials = 0;
+            testIds.forEach(id => {
+                const trials = byRat[id];
+                totalLL += evalLogLik(trials, popParams.alphaWin, popParams.alphaLoss, popParams.beta);
+                totalTrials += trials.length;
+            });
+            const avgLLPerTrial = totalTrials > 0 ? totalLL / totalTrials : null;
+            const chanceLLPerTrial = Math.log(0.25); // 4-option uniform baseline
+
+            // actual avg block curve across test rats
+            const testBlockSets = testIds.map(id => computeBlockDataFromTrials(byRat[id], 10));
+            const minBlocks = Math.min(...testBlockSets.map(b => b.length));
+            const actualAvgBlocks = [];
+            for (let b = 0; b < minBlocks; b++) {
+                actualAvgBlocks.push({
+                    block: b + 1,
+                    p1: testBlockSets.reduce((s, bs) => s + bs[b].p1, 0) / testBlockSets.length,
+                    p2: testBlockSets.reduce((s, bs) => s + bs[b].p2, 0) / testBlockSets.length,
+                    p3: testBlockSets.reduce((s, bs) => s + bs[b].p3, 0) / testBlockSets.length,
+                    p4: testBlockSets.reduce((s, bs) => s + bs[b].p4, 0) / testBlockSets.length,
+                });
+            }
+
+            // simulate with population params, same length, averaged over several runs
+            const simRuns = 30;
+            const simTrialsLen = minBlocks * 10;
+            const simBlockAccum = actualAvgBlocks.map(() => ({ p1: 0, p2: 0, p3: 0, p4: 0 }));
+            for (let r = 0; r < simRuns; r++) {
+                const agent = new crGTAgent(popParams.alphaWin, popParams.alphaLoss, popParams.beta, 0.1);
+                const log = agent.run(simTrialsLen);
+                const simBlocks = computeBlockDataFromTrials(
+                    log.map(l => ({ choice: l.choice })), 10
+                );
+                simBlocks.forEach((sb, i) => {
+                    if (simBlockAccum[i]) {
+                        simBlockAccum[i].p1 += sb.p1 / simRuns;
+                        simBlockAccum[i].p2 += sb.p2 / simRuns;
+                        simBlockAccum[i].p3 += sb.p3 / simRuns;
+                        simBlockAccum[i].p4 += sb.p4 / simRuns;
+                    }
+                });
+            }
+            const predictedAvgBlocks = simBlockAccum.map((sb, i) => ({ block: i + 1, ...sb }));
+
+            // correlation between actual and predicted, flattened across all 4 options x blocks
+            const flattenActual = [];
+            const flattenPred = [];
+            actualAvgBlocks.forEach((ab, i) => {
+                const pb = predictedAvgBlocks[i];
+                ['p1', 'p2', 'p3', 'p4'].forEach(k => { flattenActual.push(ab[k]); flattenPred.push(pb[k]); });
+            });
+            const corr = pearsonCorr(flattenActual, flattenPred);
+            const mae = flattenActual.reduce((s, v, i) => s + Math.abs(v - flattenPred[i]), 0) / flattenActual.length;
+
+            return {
+                trainIds, testIds, trainFits, popParams,
+                avgLLPerTrial, chanceLLPerTrial,
+                actualAvgBlocks, predictedAvgBlocks,
+                corr, mae,
+            };
+        }
+
         // ----- color palette -----
         const COLORS = {
             P1: '#4f8fd4',
@@ -579,9 +1122,8 @@
             textMuted: '#8fa4bc',
         };
 
-        // ----- React Components -----
+        // ----- React Components (simulator) -----
 
-        // Slider with label
         const ParamSlider = ({ label, id, min, max, step, value, onChange, format }) => {
             const fmt = format || ((v) => v.toFixed(2));
             return (
@@ -603,7 +1145,6 @@
             );
         };
 
-        // Preset buttons
         const PresetSelector = ({ presets, current, onSelect }) => {
             return (
                 <div className="preset-section">
@@ -623,7 +1164,6 @@
             );
         };
 
-        // Metrics cards
         const MetricsRow = ({ metrics }) => {
             const { optimalPct, premTotal, winStayProb, loseShiftProb, winRate } = metrics;
             return (
@@ -660,28 +1200,24 @@
             );
         };
 
-        // ----- main App -----
-        const App = () => {
-            // parameters
+        // ----- SimulatorTab (original app, unchanged behavior) -----
+        const SimulatorTab = () => {
             const [alphaWin, setAlphaWin] = useState(0.5);
             const [alphaLoss, setAlphaLoss] = useState(0.5);
             const [beta, setBeta] = useState(1.0);
             const [gammaImpulse, setGammaImpulse] = useState(0.10);
             const [presetKey, setPresetKey] = useState('control');
 
-            // simulation state
             const [log, setLog] = useState(null);
             const [blocks, setBlocks] = useState(null);
             const [metrics, setMetrics] = useState(null);
             const [isRunning, setIsRunning] = useState(false);
 
-            // chart refs
             const chart1Ref = useRef(null);
             const chart2Ref = useRef(null);
             const chart1Instance = useRef(null);
             const chart2Instance = useRef(null);
 
-            // preset definitions
             const presets = {
                 control: 'Control / Baseline',
                 female_lc: 'Female + LC Inhibition',
@@ -696,7 +1232,6 @@
                 custom: { alphaWin: 0.5, alphaLoss: 0.5, beta: 1.0, gammaImpulse: 0.10 },
             };
 
-            // apply preset
             const applyPreset = useCallback((key) => {
                 setPresetKey(key);
                 if (key === 'custom') return;
@@ -709,13 +1244,11 @@
                 }
             }, []);
 
-            // run simulation
             const runSimulation = useCallback(() => {
                 setIsRunning(true);
-                // Use requestAnimationFrame to let UI breathe
                 requestAnimationFrame(() => {
                     const agent = new crGTAgent(alphaWin, alphaLoss, beta, gammaImpulse);
-                    const data = agent.run();
+                    const data = agent.run(N_TRIALS);
                     const blk = computeBlockData(data);
                     const met = computeMetrics(data);
                     setLog(data);
@@ -725,261 +1258,95 @@
                 });
             }, [alphaWin, alphaLoss, beta, gammaImpulse]);
 
-            // auto-run on param change
             useEffect(() => {
                 runSimulation();
             }, [alphaWin, alphaLoss, beta, gammaImpulse, runSimulation]);
 
-            // chart rendering
             useEffect(() => {
                 if (!blocks || blocks.length === 0) return;
-
                 const labels = blocks.map(b => `B${b.block}`);
 
-                // ---- Chart 1: Choice Strategy ----
                 if (chart1Ref.current) {
-                    if (chart1Instance.current) {
-                        chart1Instance.current.destroy();
-                        chart1Instance.current = null;
-                    }
+                    if (chart1Instance.current) { chart1Instance.current.destroy(); chart1Instance.current = null; }
                     const ctx = chart1Ref.current.getContext('2d');
                     chart1Instance.current = new Chart(ctx, {
                         type: 'line',
                         data: {
                             labels: labels,
                             datasets: [
-                                {
-                                    label: 'P1 (Safe)',
-                                    data: blocks.map(b => b.p1),
-                                    borderColor: COLORS.P1,
-                                    backgroundColor: COLORS.P1 + '30',
-                                    borderWidth: 2.5,
-                                    pointRadius: 1.5,
-                                    tension: 0.3,
-                                    fill: false,
-                                },
-                                {
-                                    label: 'P2 (Optimal)',
-                                    data: blocks.map(b => b.p2),
-                                    borderColor: COLORS.P2,
-                                    backgroundColor: COLORS.P2 + '30',
-                                    borderWidth: 2.5,
-                                    pointRadius: 1.5,
-                                    tension: 0.3,
-                                    fill: false,
-                                },
-                                {
-                                    label: 'P3 (Risky)',
-                                    data: blocks.map(b => b.p3),
-                                    borderColor: COLORS.P3,
-                                    backgroundColor: COLORS.P3 + '30',
-                                    borderWidth: 2.5,
-                                    pointRadius: 1.5,
-                                    tension: 0.3,
-                                    fill: false,
-                                },
-                                {
-                                    label: 'P4 (HighRisk)',
-                                    data: blocks.map(b => b.p4),
-                                    borderColor: COLORS.P4,
-                                    backgroundColor: COLORS.P4 + '30',
-                                    borderWidth: 2.5,
-                                    pointRadius: 1.5,
-                                    tension: 0.3,
-                                    fill: false,
-                                },
+                                { label: 'P1 (Safe)', data: blocks.map(b => b.p1), borderColor: COLORS.P1, backgroundColor: COLORS.P1 + '30', borderWidth: 2.5, pointRadius: 1.5, tension: 0.3, fill: false },
+                                { label: 'P2 (Optimal)', data: blocks.map(b => b.p2), borderColor: COLORS.P2, backgroundColor: COLORS.P2 + '30', borderWidth: 2.5, pointRadius: 1.5, tension: 0.3, fill: false },
+                                { label: 'P3 (Risky)', data: blocks.map(b => b.p3), borderColor: COLORS.P3, backgroundColor: COLORS.P3 + '30', borderWidth: 2.5, pointRadius: 1.5, tension: 0.3, fill: false },
+                                { label: 'P4 (HighRisk)', data: blocks.map(b => b.p4), borderColor: COLORS.P4, backgroundColor: COLORS.P4 + '30', borderWidth: 2.5, pointRadius: 1.5, tension: 0.3, fill: false },
                             ]
                         },
                         options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
+                            responsive: true, maintainAspectRatio: false,
                             plugins: {
-                                legend: {
-                                    labels: {
-                                        color: '#c9d8ec',
-                                        font: { size: 11, weight: '500' },
-                                        boxWidth: 14,
-                                        padding: 12
-                                    }
-                                },
-                                tooltip: {
-                                    mode: 'index',
-                                    intersect: false,
-                                    backgroundColor: '#1a212b',
-                                    titleColor: '#e6edf5',
-                                    bodyColor: '#c9d8ec',
-                                    borderColor: '#25303e',
-                                    borderWidth: 1,
-                                }
+                                legend: { labels: { color: '#c9d8ec', font: { size: 11, weight: '500' }, boxWidth: 14, padding: 12 } },
+                                tooltip: { mode: 'index', intersect: false, backgroundColor: '#1a212b', titleColor: '#e6edf5', bodyColor: '#c9d8ec', borderColor: '#25303e', borderWidth: 1 }
                             },
                             scales: {
-                                x: {
-                                    ticks: { color: '#8fa4bc', font: { size: 10 }, maxTicksLimit: 30 },
-                                    grid: { color: '#1a212b', drawBorder: false },
-                                },
-                                y: {
-                                    min: 0,
-                                    max: 100,
-                                    ticks: { color: '#8fa4bc', font: { size: 10 }, callback: v => v + '%' },
-                                    grid: { color: '#1a212b', drawBorder: false },
-                                }
+                                x: { ticks: { color: '#8fa4bc', font: { size: 10 }, maxTicksLimit: 30 }, grid: { color: '#1a212b', drawBorder: false } },
+                                y: { min: 0, max: 100, ticks: { color: '#8fa4bc', font: { size: 10 }, callback: v => v + '%' }, grid: { color: '#1a212b', drawBorder: false } }
                             },
-                            interaction: {
-                                intersect: false,
-                                mode: 'index',
-                            },
+                            interaction: { intersect: false, mode: 'index' },
                         }
                     });
                 }
 
-                // ---- Chart 2: Impulsivity ----
                 if (chart2Ref.current) {
-                    if (chart2Instance.current) {
-                        chart2Instance.current.destroy();
-                        chart2Instance.current = null;
-                    }
+                    if (chart2Instance.current) { chart2Instance.current.destroy(); chart2Instance.current = null; }
                     const ctx2 = chart2Ref.current.getContext('2d');
                     chart2Instance.current = new Chart(ctx2, {
                         type: 'bar',
                         data: {
                             labels: labels,
-                            datasets: [
-                                {
-                                    label: 'Premature Response Rate',
-                                    data: blocks.map(b => b.premRate),
-                                    backgroundColor: COLORS.prem + '80',
-                                    borderColor: COLORS.prem,
-                                    borderWidth: 1.5,
-                                    borderRadius: 3,
-                                }
-                            ]
+                            datasets: [{ label: 'Premature Response Rate', data: blocks.map(b => b.premRate), backgroundColor: COLORS.prem + '80', borderColor: COLORS.prem, borderWidth: 1.5, borderRadius: 3 }]
                         },
                         options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
+                            responsive: true, maintainAspectRatio: false,
                             plugins: {
-                                legend: {
-                                    labels: {
-                                        color: '#c9d8ec',
-                                        font: { size: 11, weight: '500' },
-                                        boxWidth: 14,
-                                        padding: 12
-                                    }
-                                },
-                                tooltip: {
-                                    backgroundColor: '#1a212b',
-                                    titleColor: '#e6edf5',
-                                    bodyColor: '#c9d8ec',
-                                    borderColor: '#25303e',
-                                    borderWidth: 1,
-                                    callbacks: {
-                                        label: ctx => ctx.parsed.y.toFixed(1) + '%'
-                                    }
-                                }
+                                legend: { labels: { color: '#c9d8ec', font: { size: 11, weight: '500' }, boxWidth: 14, padding: 12 } },
+                                tooltip: { backgroundColor: '#1a212b', titleColor: '#e6edf5', bodyColor: '#c9d8ec', borderColor: '#25303e', borderWidth: 1, callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '%' } }
                             },
                             scales: {
-                                x: {
-                                    ticks: { color: '#8fa4bc', font: { size: 10 }, maxTicksLimit: 30 },
-                                    grid: { color: '#1a212b', drawBorder: false },
-                                },
-                                y: {
-                                    min: 0,
-                                    max: 100,
-                                    ticks: { color: '#8fa4bc', font: { size: 10 }, callback: v => v + '%' },
-                                    grid: { color: '#1a212b', drawBorder: false },
-                                }
+                                x: { ticks: { color: '#8fa4bc', font: { size: 10 }, maxTicksLimit: 30 }, grid: { color: '#1a212b', drawBorder: false } },
+                                y: { min: 0, max: 100, ticks: { color: '#8fa4bc', font: { size: 10 }, callback: v => v + '%' }, grid: { color: '#1a212b', drawBorder: false } }
                             }
                         }
                     });
                 }
 
                 return () => {
-                    if (chart1Instance.current) {
-                        chart1Instance.current.destroy();
-                        chart1Instance.current = null;
-                    }
-                    if (chart2Instance.current) {
-                        chart2Instance.current.destroy();
-                        chart2Instance.current = null;
-                    }
+                    if (chart1Instance.current) { chart1Instance.current.destroy(); chart1Instance.current = null; }
+                    if (chart2Instance.current) { chart2Instance.current.destroy(); chart2Instance.current = null; }
                 };
             }, [blocks]);
 
-            // export handler
             const handleExport = useCallback(() => {
                 if (!log || log.length === 0) return;
                 const csv = generateCSV(log);
                 downloadCSV(csv);
             }, [log]);
 
-            // compute if running
             const isLoading = isRunning || !log || !blocks || !metrics;
 
             return (
                 <div className="app-container">
-                    {/* ---- Sidebar ---- */}
                     <div className="sidebar">
                         <div className="sidebar-title">crGT-Sim</div>
-                        <div className="sidebar-sub">
-                            Q-Learning & Impulsivity Parameter Explorer
-                        </div>
+                        <div className="sidebar-sub">Q-Learning & Impulsivity Parameter Explorer</div>
 
-                        <ParamSlider
-                            label="α (Learning Rate Wins)"
-                            id="alphaWin"
-                            min={0.01}
-                            max={1.0}
-                            step={0.01}
-                            value={alphaWin}
-                            onChange={v => { setAlphaWin(v); setPresetKey('custom'); }}
-                            format={v => v.toFixed(2)}
-                        />
+                        <ParamSlider label="α (Learning Rate Wins)" id="alphaWin" min={0.01} max={1.0} step={0.01} value={alphaWin} onChange={v => { setAlphaWin(v); setPresetKey('custom'); }} format={v => v.toFixed(2)} />
+                        <ParamSlider label="α (Learning Rate Losses)" id="alphaLoss" min={0.01} max={1.0} step={0.01} value={alphaLoss} onChange={v => { setAlphaLoss(v); setPresetKey('custom'); }} format={v => v.toFixed(2)} />
+                        <ParamSlider label="β (Exploration / Inverse Temp)" id="beta" min={0.1} max={5.0} step={0.05} value={beta} onChange={v => { setBeta(v); setPresetKey('custom'); }} format={v => v.toFixed(2)} />
+                        <ParamSlider label="γ (Motor Impulsivity Threshold)" id="gammaImpulse" min={0.0} max={1.0} step={0.01} value={gammaImpulse} onChange={v => { setGammaImpulse(v); setPresetKey('custom'); }} format={v => v.toFixed(2)} />
 
-                        <ParamSlider
-                            label="α (Learning Rate Losses)"
-                            id="alphaLoss"
-                            min={0.01}
-                            max={1.0}
-                            step={0.01}
-                            value={alphaLoss}
-                            onChange={v => { setAlphaLoss(v); setPresetKey('custom'); }}
-                            format={v => v.toFixed(2)}
-                        />
-
-                        <ParamSlider
-                            label="β (Exploration / Inverse Temp)"
-                            id="beta"
-                            min={0.1}
-                            max={5.0}
-                            step={0.05}
-                            value={beta}
-                            onChange={v => { setBeta(v); setPresetKey('custom'); }}
-                            format={v => v.toFixed(2)}
-                        />
-
-                        <ParamSlider
-                            label="γ (Motor Impulsivity Threshold)"
-                            id="gammaImpulse"
-                            min={0.0}
-                            max={1.0}
-                            step={0.01}
-                            value={gammaImpulse}
-                            onChange={v => { setGammaImpulse(v); setPresetKey('custom'); }}
-                            format={v => v.toFixed(2)}
-                        />
-
-                        <PresetSelector
-                            presets={presets}
-                            current={presetKey}
-                            onSelect={applyPreset}
-                        />
+                        <PresetSelector presets={presets} current={presetKey} onSelect={applyPreset} />
 
                         <div className="export-wrap">
-                            <button
-                                className="export-btn"
-                                onClick={handleExport}
-                                disabled={isLoading || !log}
-                            >
+                            <button className="export-btn" onClick={handleExport} disabled={isLoading || !log}>
                                 <svg viewBox="0 0 24 24" width="16" height="16">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
                                     <path d="M12 15l-4-4h2.5V8h3v3H16l-4 4z" />
@@ -993,9 +1360,7 @@
                         </div>
                     </div>
 
-                    {/* ---- Main Content ---- */}
                     <div className="main">
-                        {/* Metrics */}
                         {metrics && !isLoading ? (
                             <MetricsRow metrics={metrics} />
                         ) : (
@@ -1010,35 +1375,24 @@
                             </div>
                         )}
 
-                        {/* Chart 1 */}
                         <div className="chart-card">
                             <div className="chart-title">
                                 Choice Strategy Trajectory
                                 <small>10-trial rolling blocks</small>
-                                <span className="status-badge">
-                                    {isLoading ? 'running…' : `${N_BLOCKS} blocks`}
-                                </span>
+                                <span className="status-badge">{isLoading ? 'running…' : `${N_BLOCKS} blocks`}</span>
                             </div>
-                            <div className="chart-wrap tall">
-                                <canvas ref={chart1Ref}></canvas>
-                            </div>
+                            <div className="chart-wrap tall"><canvas ref={chart1Ref}></canvas></div>
                         </div>
 
-                        {/* Chart 2 */}
                         <div className="chart-card">
                             <div className="chart-title">
                                 Motor Impulsivity Index
                                 <small>premature response rate</small>
-                                <span className="status-badge">
-                                    {isLoading ? '…' : `γ = ${gammaImpulse.toFixed(2)}`}
-                                </span>
+                                <span className="status-badge">{isLoading ? '…' : `γ = ${gammaImpulse.toFixed(2)}`}</span>
                             </div>
-                            <div className="chart-wrap">
-                                <canvas ref={chart2Ref}></canvas>
-                            </div>
+                            <div className="chart-wrap"><canvas ref={chart2Ref}></canvas></div>
                         </div>
 
-                        {/* footer note */}
                         <div style={{ fontSize: '11px', color: '#4f647c', textAlign: 'center', padding: '6px 0 2px' }}>
                             Based on Hynes et al. · LC / aCIN modulation · crGT paradigm
                         </div>
@@ -1046,6 +1400,279 @@
                             Made by George Zeng 2026
                         </div>
                     </div>
+                </div>
+            );
+        };
+
+        // ----- DataTab: upload, mapping, fitting, validation -----
+        const DataTab = () => {
+            const [fileName, setFileName] = useState(null);
+            const [rawHeaders, setRawHeaders] = useState([]);
+            const [rawData, setRawData] = useState([]);
+            const [mapping, setMapping] = useState({});
+            const [parseError, setParseError] = useState(null);
+            const [dragOver, setDragOver] = useState(false);
+
+            const [byRat, setByRat] = useState(null);
+            const [dropped, setDropped] = useState(null);
+
+            const [fits, setFits] = useState(null); // per-rat fit results
+            const [fitting, setFitting] = useState(false);
+
+            const [validation, setValidation] = useState(null);
+            const [validating, setValidating] = useState(false);
+
+            const valChartRef = useRef(null);
+            const valChartInstance = useRef(null);
+
+            const handleFile = useCallback(async (file) => {
+                setParseError(null);
+                setByRat(null); setFits(null); setValidation(null);
+                try {
+                    const { headers, data } = await parseUploadedFile(file);
+                    if (headers.length === 0) { setParseError('Could not find a header row in this file.'); return; }
+                    setFileName(file.name);
+                    setRawHeaders(headers);
+                    setRawData(data);
+                    setMapping(guessColumnMapping(headers));
+                } catch (err) {
+                    setParseError('Failed to parse file: ' + err.message);
+                }
+            }, []);
+
+            const onDrop = useCallback((e) => {
+                e.preventDefault(); setDragOver(false);
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+            }, [handleFile]);
+
+            const onFileInput = useCallback((e) => {
+                if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+            }, [handleFile]);
+
+            const updateMapping = (fieldKey, header) => {
+                setMapping(prev => ({ ...prev, [fieldKey]: header === '' ? undefined : header }));
+            };
+
+            const requiredMissing = CANONICAL_FIELDS.filter(f => f.required && !mapping[f.key]);
+
+            const processMapping = useCallback(() => {
+                const result = applyMapping(rawHeaders, rawData, mapping);
+                setByRat(result.byRat);
+                setDropped(result.dropped);
+                setFits(null);
+                setValidation(null);
+            }, [rawHeaders, rawData, mapping]);
+
+            const runFitting = useCallback(() => {
+                if (!byRat) return;
+                setFitting(true);
+                requestAnimationFrame(() => {
+                    const results = Object.entries(byRat).map(([ratId, trials]) => {
+                        const rec0 = trials[0];
+                        const fit = fitTrials(trials);
+                        return { ratId, cohort: rec0.cohort, sex: rec0.sex, ...fit };
+                    });
+                    setFits(results);
+                    setFitting(false);
+                });
+            }, [byRat]);
+
+            const doValidation = useCallback(() => {
+                if (!byRat) return;
+                setValidating(true);
+                requestAnimationFrame(() => {
+                    const result = runValidation(byRat);
+                    setValidation(result);
+                    setValidating(false);
+                });
+            }, [byRat]);
+
+            useEffect(() => {
+                if (!validation || validation.error || !valChartRef.current) return;
+                if (valChartInstance.current) { valChartInstance.current.destroy(); valChartInstance.current = null; }
+                const labels = validation.actualAvgBlocks.map(b => `B${b.block}`);
+                const ctx = valChartRef.current.getContext('2d');
+                const mkPair = (key, color) => ([
+                    { label: `${key.toUpperCase()} actual`, data: validation.actualAvgBlocks.map(b => b[key]), borderColor: color, borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false },
+                    { label: `${key.toUpperCase()} predicted`, data: validation.predictedAvgBlocks.map(b => b[key]), borderColor: color, borderWidth: 2, borderDash: [5, 4], pointRadius: 0, tension: 0.3, fill: false },
+                ]);
+                valChartInstance.current = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels, datasets: [...mkPair('p1', COLORS.P1), ...mkPair('p2', COLORS.P2), ...mkPair('p3', COLORS.P3), ...mkPair('p4', COLORS.P4)] },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#c9d8ec', font: { size: 10 }, boxWidth: 12, padding: 8 } },
+                            tooltip: { backgroundColor: '#1a212b', titleColor: '#e6edf5', bodyColor: '#c9d8ec', borderColor: '#25303e', borderWidth: 1 }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#8fa4bc', font: { size: 10 } }, grid: { color: '#1a212b', drawBorder: false } },
+                            y: { min: 0, max: 100, ticks: { color: '#8fa4bc', font: { size: 10 }, callback: v => v + '%' }, grid: { color: '#1a212b', drawBorder: false } }
+                        }
+                    }
+                });
+                return () => { if (valChartInstance.current) { valChartInstance.current.destroy(); valChartInstance.current = null; } };
+            }, [validation]);
+
+            const nRats = byRat ? Object.keys(byRat).length : 0;
+
+            return (
+                <div className="data-panel">
+                    <div className="card">
+                        <div className="card-title">1. Upload Session Data</div>
+                        <div className="card-sub">CSV or Excel (.xlsx/.xls). Trial-level rows — one row per trial, any column names/order.</div>
+                        <div
+                            className={`dropzone ${dragOver ? 'dragover' : ''}`}
+                            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                            onDragLeave={() => setDragOver(false)}
+                            onDrop={onDrop}
+                            onClick={() => document.getElementById('fileInputHidden').click()}
+                        >
+                            <div className="dropzone-label">
+                                {fileName ? <><b>{fileName}</b> loaded — click to replace</> : <>Drag a file here, or <b>click to browse</b></>}
+                            </div>
+                            <input id="fileInputHidden" type="file" accept=".csv,.xlsx,.xls,.txt" style={{ display: 'none' }} onChange={onFileInput} />
+                        </div>
+                        {parseError && <div className="warn-box">{parseError}</div>}
+                        <div className="privacy-note">
+                            This runs entirely in your browser — files are parsed and modeled locally in JS, nothing is uploaded to a server or stored anywhere. Still, since this page is on a public URL, don't treat it as a substitute for however the lab normally handles data access/retention.
+                        </div>
+                    </div>
+
+                    {rawHeaders.length > 0 && (
+                        <div className="card">
+                            <div className="card-title">2. Confirm Column Mapping</div>
+                            <div className="card-sub">{rawData.length} rows detected. We guessed the mapping below — check it before processing.</div>
+                            <div className="scroll-x">
+                                <table className="map-table">
+                                    <thead>
+                                        <tr><th>Field</th><th>Maps to column</th><th>Required</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        {CANONICAL_FIELDS.map(f => (
+                                            <tr key={f.key}>
+                                                <td>{f.label}</td>
+                                                <td>
+                                                    <select value={mapping[f.key] || ''} onChange={e => updateMapping(f.key, e.target.value)}>
+                                                        <option value="">— none —</option>
+                                                        {rawHeaders.map(h => <option key={h} value={h}>{h}</option>)}
+                                                    </select>
+                                                </td>
+                                                <td>{f.required ? <span className="pill">required</span> : <span className="pill" style={{opacity:0.5}}>optional</span>}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {requiredMissing.length > 0 && (
+                                <div className="warn-box">Still need: {requiredMissing.map(f => f.label).join(', ')}</div>
+                            )}
+                            <div className="row-flex" style={{ marginTop: 14 }}>
+                                <button className="btn" disabled={requiredMissing.length > 0} onClick={processMapping}>Confirm &amp; Process</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {byRat && (
+                        <div className="card">
+                            <div className="card-title">3. Parsed Dataset</div>
+                            <div className="row-flex" style={{ marginBottom: 8 }}>
+                                <span className="pill">{nRats} rats</span>
+                                <span className="pill">{dropped.noRatId + dropped.noTrial + dropped.badChoice + dropped.badOutcome === 0 ? 'no rows dropped' : `${dropped.noRatId + dropped.noTrial + dropped.badChoice + dropped.badOutcome} rows dropped`}</span>
+                            </div>
+                            {(dropped.noRatId + dropped.noTrial + dropped.badChoice + dropped.badOutcome > 0) && (
+                                <div className="warn-box">
+                                    Dropped rows — missing rat ID: {dropped.noRatId}, missing trial #: {dropped.noTrial}, unrecognized choice value: {dropped.badChoice}, unrecognized outcome value: {dropped.badOutcome}.
+                                    If a number seems too high, double check the mapping above (e.g. choice column might use labels we don't recognize yet).
+                                </div>
+                            )}
+                            <div className="row-flex" style={{ marginTop: 12 }}>
+                                <button className="btn" onClick={runFitting} disabled={fitting}>{fitting ? 'Fitting…' : 'Fit Model to Each Rat'}</button>
+                                <button className="btn secondary" onClick={doValidation} disabled={validating || nRats < 4}>{validating ? 'Validating…' : 'Run 75/25 Validation'}</button>
+                                {nRats < 4 && <span style={{fontSize:'11px', color:'#6a8aac'}}>(need ≥4 rats for validation)</span>}
+                            </div>
+                        </div>
+                    )}
+
+                    {fits && (
+                        <div className="card">
+                            <div className="card-title">Per-Rat Fitted Parameters</div>
+                            <div className="card-sub">Grid-search maximum-likelihood fit of α-win, α-loss, β to each rat's actual choice sequence. γ (premature rate) is the raw observed frequency, if that column was mapped.</div>
+                            <div className="scroll-x">
+                                <table className="fit-table">
+                                    <thead>
+                                        <tr><th>Rat</th><th>Cohort</th><th>Sex</th><th>Trials</th><th>α-win</th><th>α-loss</th><th>β</th><th>γ (premature)</th><th>Log-lik</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        {fits.map(f => (
+                                            <tr key={f.ratId}>
+                                                <td>{f.ratId}</td>
+                                                <td>{f.cohort}</td>
+                                                <td>{f.sex}</td>
+                                                <td>{f.nTrials}</td>
+                                                <td>{f.alphaWin.toFixed(2)}</td>
+                                                <td>{f.alphaLoss.toFixed(2)}</td>
+                                                <td>{f.beta.toFixed(2)}</td>
+                                                <td>{f.gammaImpulse !== null ? (f.gammaImpulse * 100).toFixed(1) + '%' : '—'}</td>
+                                                <td>{f.logLik.toFixed(1)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {validation && validation.error && (
+                        <div className="card"><div className="warn-box">{validation.error}</div></div>
+                    )}
+
+                    {validation && !validation.error && (
+                        <div className="card">
+                            <div className="card-title">75/25 Validation Results</div>
+                            <div className="card-sub">
+                                Fit on {validation.trainIds.length} rats ({validation.trainIds.join(', ')}), held out {validation.testIds.length} rats ({validation.testIds.join(', ')}).
+                                Population params = mean of individual training fits — a naive estimate, not a hierarchical/pooled fit.
+                            </div>
+                            <div className="metrics-row" style={{ marginBottom: 16 }}>
+                                <div className="metric-card">
+                                    <div className="metric-label">Pop. α-win / α-loss / β</div>
+                                    <div className="metric-value" style={{fontSize:'16px'}}>{validation.popParams.alphaWin.toFixed(2)} / {validation.popParams.alphaLoss.toFixed(2)} / {validation.popParams.beta.toFixed(2)}</div>
+                                </div>
+                                <div className="metric-card">
+                                    <div className="metric-label">Held-out Log-lik / trial</div>
+                                    <div className="metric-value">{validation.avgLLPerTrial.toFixed(3)}</div>
+                                    <div className="sub">vs. {validation.chanceLLPerTrial.toFixed(3)} chance (uniform)</div>
+                                </div>
+                                <div className="metric-card">
+                                    <div className="metric-label">Curve Correlation</div>
+                                    <div className="metric-value">{validation.corr !== null ? validation.corr.toFixed(3) : 'n/a'}</div>
+                                    <div className="sub">actual vs. predicted choice %</div>
+                                </div>
+                                <div className="metric-card">
+                                    <div className="metric-label">Mean Abs. Error</div>
+                                    <div className="metric-value">{validation.mae.toFixed(1)}<span className="unit">pts</span></div>
+                                    <div className="sub">choice % per block</div>
+                                </div>
+                            </div>
+                            <div className="chart-title">Actual (solid) vs. Model-Predicted (dashed) Choice Curves — Held-out Rats<small>averaged across held-out rats, 10-trial blocks</small></div>
+                            <div className="chart-wrap tall"><canvas ref={valChartRef}></canvas></div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // ----- main App with tabs -----
+        const App = () => {
+            const [tab, setTab] = useState('simulator');
+            return (
+                <div>
+                    <div className="top-tabs">
+                        <button className={`top-tab-btn ${tab === 'simulator' ? 'active' : ''}`} onClick={() => setTab('simulator')}>Simulator</button>
+                        <button className={`top-tab-btn ${tab === 'data' ? 'active' : ''}`} onClick={() => setTab('data')}>Real Data: Upload &amp; Fit</button>
+                    </div>
+                    {tab === 'simulator' ? <SimulatorTab /> : <DataTab />}
                 </div>
             );
         };
