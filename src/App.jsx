@@ -27,6 +27,8 @@ const PRESETS = {
   control: 'Control / Baseline',
   female_lc: 'Female + LC Inhibition',
   acin_acq: 'aCIN Inhibition (Acquisition)',
+  pobs_tbi: 'Published: TBI Cohort (n=71)',
+  pobs_sham: 'Published: Sham Cohort (n=112)',
   custom: 'Custom Parameter Set'
 };
 
@@ -34,6 +36,8 @@ const PRESET_VALUES = {
   control: { alphaWin: 0.5, alphaLoss: 0.5, beta: 1.0, gammaImpulse: 0.1 },
   female_lc: { alphaWin: 0.5, alphaLoss: 0.2, beta: 1.0, gammaImpulse: 0.4 },
   acin_acq: { alphaWin: 0.3, alphaLoss: 0.3, beta: 3.0, gammaImpulse: 0.15 },
+  pobs_tbi: { alphaWin: 0.2, alphaLoss: 0.2, beta: 0.5, gammaImpulse: 0.1 },
+  pobs_sham: { alphaWin: 0.7, alphaLoss: 0.2, beta: 2.0, gammaImpulse: 0.1 },
   custom: { alphaWin: 0.5, alphaLoss: 0.5, beta: 1.0, gammaImpulse: 0.1 }
 };
 
@@ -395,6 +399,24 @@ export default function App() {
               >
                 300 trials · crGT P1-P4 · R / Python ready
               </div>
+              {(presetKey === 'pobs_tbi' || presetKey === 'pobs_sham') && (
+                <div
+                  style={{
+                    fontSize: '10px',
+                    color: '#6a8aac',
+                    marginTop: '10px',
+                    padding: '8px 10px',
+                    background: '#0f1a14',
+                    border: '1px solid #234a35',
+                    borderRadius: '8px',
+                    lineHeight: 1.4
+                  }}
+                >
+                  Fit to published group-average session curves (Vonder Haar, Frankot &amp;
+                  Martens, 2022, Frontiers in Behavioral Neuroscience). Approximate — fit to
+                  session-level aggregates, not trial-by-trial data.
+                </div>
+              )}
             </div>
           )}
         </div>
